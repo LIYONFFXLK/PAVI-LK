@@ -1,104 +1,74 @@
-const { cmd, commands } = require("../command");
-const yts = require("yt-search");
-const { ytmp3 } = require("@vreden/youtube_scraper");
+const { cmd } = require('../command');
+const yts = require('yt-search');
+const ytdl = require('ytdl-core');
+const fs = require('fs');
+const path = require('path');
 
-cmd(
-  {
-    pattern: "song",
-    alias: ["song", "downloadsong"],
-    react: "🎶",
-    desc: "Download Song",
-    category: "download",
-    filename: __filename,
-  },
-  async (
-    pavi,
-    mek,
-    m,
-    {
-      from,
-      quoted,
-      body,
-      isCmd,
-      command,
-      args,
-      q,
-      isGroup,
-      sender,
-      senderNumber,
-      botNumber2,
-      botNumber,
-      pushname,
-      isMe,
-      isOwner,
-      groupMetadata,
-      groupName,
-      participants,
-      groupAdmins,
-      isBotAdmins,
-      isAdmins,
-      reply,
-    }
-  ) => {
-    try {
-      if (!q) return reply("❌ *Please provide a song name or YouTube link*");
+cmd({
+  pattern: "song",
+  alias: ["song", "downloadsong"],
+  react: "🎵",
+  desc: "Download Song",
+  category: "download",
+  filename: __filename,
+}, 
+async (pavi, mek) => {
+  let { q, reply } = mek;
 
-      const search = await yts(q);
-      const data = search.videos[0];
-      const url = data.url;
+  try {
+    if (!q) return reply("❌ *Please provide a song name or YouTube link*");
 
-      let desc = `
-Song downloader
-🎬 *Title:* ${data.title}
-⏱️ *Duration:* ${data.timestamp}
-📅 *Uploaded:* ${data.ago}
+    const search = await yts(q);
+    const data = search.videos[0];
+    const url = data.url;
+
+    const desc = `
+🎵 *Title:* ${data.title}
+🕒 *Duration:* ${data.timestamp}
+📤 *Uploaded:* ${data.ago}
 👀 *Views:* ${data.views.toLocaleString()}
 🔗 *Watch Here:* ${data.url}
 `;
 
-      await pavi.sendMessage(
-        from,
-        { image: { url: data.thumbnail }, caption: desc },
-        { quoted: mek }
-      );
+    await pavi.sendMessage(mek.from, {
+      image: { url: data.thumbnail },
+      caption: desc,
+    }, { quoted: mek });
 
-      const quality = "192";
-      const songData = await ytmp3(url, quality);
-
-      let durationParts = data.timestamp.split(":").map(Number);
-      let totalSeconds =
-        durationParts.length === 3
-          ? durationParts[0] * 3600 + durationParts[1] * 60 + durationParts[2]
-          : durationParts[0] * 60 + durationParts[1];
-
-      if (totalSeconds > 1800) {
-        return reply("⏳ *Sorry, audio files longer than 30 minutes are not supported.*");
-      }
-
-      await pavi.sendMessage(
-        from,
-        {
-          audio: { url: songData.download.url },
-          mimetype: "audio/mpeg",
-        },
-        { quoted: mek }
-      );
-
-      await pavi.sendMessage(
-        from,
-        {
-          document: { url: songData.download.url },
-          mimetype: "audio/mpeg",
-          fileName: `${data.title}.mp3`,
-          caption: "🎶 *Your song is ready to be played!*",
-        },
-        { quoted: mek }
-      );
-
-      return reply("✅ Thank you");
-    } catch (e) {
-      console.log(e);
-      reply(`❌ *Error:* ${e.message} 😞`);
+    // Duration limit check (30 mins max)
+    const durationParts = data.timestamp.split(':').map(Number);
+    let totalSeconds = 0;
+    if (durationParts.length === 3) {
+      totalSeconds = durationParts[0] * 3600 + durationParts[1] * 60 + durationParts[2];
+    } else if (durationParts.length === 2) {
+      totalSeconds = durationParts[0] * 60 + durationParts[1];
+    } else {
+      totalSeconds = durationParts[0];
     }
+
+    if (totalSeconds > 1800) {
+      return reply("❌ *Sorry, audio files longer than 30 minutes are not supported.*");
+    }
+
+    // Download audio using ytdl-core
+    const tempFile = path.join(__dirname, `${data.title.replace(/[^\w\s]/gi, '')}.mp3`);
+    await new Promise((resolve, reject) => {
+      ytdl(url, { filter: 'audioonly' })
+        .pipe(fs.createWriteStream(tempFile))
+        .on('finish', resolve)
+        .on('error', reject);
+    });
+
+    await pavi.sendMessage(mek.from, {
+      audio: { url: tempFile },
+      mimetype: 'audio/mpeg'
+    }, { quoted: mek });
+
+    // Optionally delete file after sending
+    fs.unlinkSync(tempFile);
+
+  } catch (err) {
+    console.error(err);
+    reply("❌ *An error occurred while processing your request.*");
   }
-);
+});

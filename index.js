@@ -89,7 +89,7 @@ async function connectToWA() {
 
       const up = `PAVI-MD connected ✅\n\nPREFIX: ${prefix}`;
       await pavi.sendMessage(ownerNumber[0] + "@s.whatsapp.net", {
-        image: { url: `https://github.com/LIYONFFXLK/PAVI-LK/blob/main/images/1754098410527.png` },
+        image: { url: `https://raw.githubusercontent.com/LIYONFFXLK/PAVI-LK/main/images/1754098410527.png` },
         caption: up
       });
 

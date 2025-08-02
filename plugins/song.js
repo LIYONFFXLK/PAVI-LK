@@ -5,7 +5,7 @@ const { ytmp3 } = require("@vreden/youtube_scraper");
 cmd(
   {
     pattern: "song",
-    alias: ["song", "download song"],
+    alias: ["song", "Download Song"],
     react: "🎶",
     desc: "Download Song",
     category: "download",

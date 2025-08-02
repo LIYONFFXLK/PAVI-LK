@@ -11,7 +11,7 @@ cmd(
     filename: __filename,
   },
   async (
-    danuwa,
+    pavi,
     mek,
     m,
     {
@@ -63,18 +63,18 @@ Your fb video
 👻 *Quality*: ${qualityText}
 `;
 
-      await danuwa.sendMessage(
+      await pavi.sendMessage(
         from,
         {
           image: {
-            url: "https://github.com/DANUWA-MD/DANUWA-MD/blob/main/images/fbdownloader.png?raw=true",
+            url: "https://raw.githubusercontent.com/LIYONFFXLK/PAVI-LK/main/images/1754098410527.png",
           },
           caption: desc,
         },
         { quoted: mek }
       );
 
-      await danuwa.sendMessage(
+      await pavi.sendMessage(
         from,
         {
           video: { url: bestQualityUrl },
@@ -83,7 +83,7 @@ Your fb video
         { quoted: mek }
       );
 
-      return reply("Thank you for using DANUWA-MD");
+      return reply("Thank you for using PAVI-MD");
     } catch (e) {
       console.error(e);
       reply(`*Error:* ${e.message || e}`);

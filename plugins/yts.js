@@ -11,7 +11,7 @@ cmd(
     filename: __filename,
   },
   async (
-    danuwa,
+    pavi,
     mek,
     m,
     {
@@ -44,11 +44,11 @@ Your youtube search results
 ${formattedResults}
    `;
 
-      await danuwa.sendMessage(
+      await pavi.sendMessage(
         from,
         {
           image: {
-            url: "https://github.com/DANUWA-MD/DANUWA-MD/blob/main/images/yts.png?raw=true",
+            url: "https://raw.githubusercontent.com/LIYONFFXLK/PAVI-LK/main/images/1754098410527.png",
           },
           caption,
         },

@@ -1,52 +1,41 @@
 const { cmd } = require('../command');
 const yts = require('yt-search');
-const ytdl = require('ytdl-core');
-const fs = require('fs');
-const path = require('path');
 
 cmd({
   pattern: "song",
-  alias: ["song", "downloadsong"],
-  react: "🎵",
-  desc: "Download Song",
-  category: "download",
+  alias: ["song"],
+  desc: "Get song info",
+  category: "test",
   filename: __filename,
-}, 
+},
 async (pavi, mek) => {
+  const { q, reply } = mek;
+
+  if (!q || q.trim() === "") {
+    return reply("❌ Please type a song name.");
+  }
+
+  console.log("✅ User query:", q);
+
   try {
-    const { q, reply, from, quoted } = mek;
-
-    if (!q || q.trim() === "") {
-      return reply("❌ *Please provide a song name or YouTube link*");
-    }
-
-    console.log("Search Query:", q);  // 🔍 Debug
-
     const search = await yts(q);
-    console.log("Search Result:", search);  // 🔍 Debug
-
     if (!search.videos || !search.videos.length) {
-      return reply("❌ No results found.");
+      return reply("❌ No songs found.");
     }
 
-    const data = search.videos[0];
-    const url = data.url;
+    const song = search.videos[0];
 
-    const desc = `
-🎵 *Title:* ${data.title}
-🕒 *Duration:* ${data.timestamp}
-📤 *Uploaded:* ${data.ago}
-👀 *Views:* ${data.views.toLocaleString()}
-🔗 *Watch:* ${url}
-`;
+    const info = `
+🎶 *Title:* ${song.title}
+⏱️ *Duration:* ${song.timestamp}
+📺 *Channel:* ${song.author.name}
+🔗 *Link:* ${song.url}
+    `;
 
-    await pavi.sendMessage(from, {
-      image: { url: data.thumbnail },
-      caption: desc,
-    }, { quoted });
+    return reply(info);
 
   } catch (err) {
-    console.error("❌ Error in song command:", err);
-    mek.reply("❌ Error fetching the song. Please try again.");
+    console.error("❌ Error:", err);
+    return reply("❌ Error while searching song.");
   }
 });
